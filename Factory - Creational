@@ -1,0 +1,37 @@
+GUI Toolkit How Factory is used: You have an abstract Button or Checkbox interface. 
+Concrete classes: WindowsButton, MacButton, LinuxButton. A WidgetFactory creates 
+buttons or checkboxes for the current operating system. Why useful: Client code can 
+build a UI without worrying about the OS-specific details. Makes the toolkit 
+scalable for multiple platforms. write simple code for this
+
+
+class Button {
+public:
+    virtual void paint() = 0;
+    virtual ~Button() {}
+};
+
+// ---------- Concrete Products ----------
+class WindowsButton : public Button {
+public:
+    void paint() override {
+        cout << "Painting Windows Button\n";
+    }
+};
+
+class MacButton : public Button {
+public:
+    void paint() override {
+        cout << "Painting Mac Button\n";
+    }
+};
+
+// ---------- Factory ----------
+class ButtonFactory {
+public:
+    static unique_ptr<Button> createButton(const string &osType) {
+        if (osType == "Windows") return make_unique<WindowsButton>();
+        else if (osType == "Mac") return make_unique<MacButton>();
+        else return nullptr;
+    }
+};
