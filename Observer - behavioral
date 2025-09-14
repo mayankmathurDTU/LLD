@@ -1,0 +1,63 @@
+class Observer; // forward declaration
+
+class Subject {
+public:
+    virtual void attach(shared_ptr<Observer> obs) = 0;
+    virtual void detach(shared_ptr<Observer> obs) = 0;
+    virtual void notify() = 0;
+    virtual string getName() = 0;
+    virtual int getStock() = 0;
+    virtual ~Subject() = default;
+};
+
+// ----------- Observer -----------
+class Observer {
+public:
+    virtual void update(shared_ptr<Subject> s) = 0;
+    virtual ~Observer() = default;
+};
+
+// ----------- Concrete Subject (Pencil) -----------
+class Pencil : public Subject, public enable_shared_from_this<Pencil> {
+    string name;
+    int stock;
+    vector<shared_ptr<Observer>> observers;
+
+public:
+    Pencil(string n, int s) : name(n), stock(s) {}
+
+    void attach(shared_ptr<Observer> obs) override {
+        observers.push_back(obs);
+    }
+
+    void detach(shared_ptr<Observer> obs) override {
+        observers.erase(remove(observers.begin(), observers.end(), obs), observers.end());
+    }
+
+    void notify() override {
+        for (auto &obs : observers) {
+            if (obs) obs->update(shared_from_this()); // ✅ pass myself
+        }
+    }
+
+    string getName() override { return name; }
+    int getStock() override { return stock; }
+
+    void setStock(int s) {
+        stock = s;
+        notify();
+    }
+};
+
+// ----------- Concrete Observer -----------
+class ConcreteObserver : public Observer {
+    string emailId;
+
+public:
+    ConcreteObserver(string e) : emailId(e) {}
+
+    void update(shared_ptr<Subject> s) override {
+        cout << "Notification to " << emailId << ": "
+             << s->getName() << " stock updated to " << s->getStock() << "\n";
+    }
+};
