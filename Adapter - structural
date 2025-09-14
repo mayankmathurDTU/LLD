@@ -1,0 +1,37 @@
+class WeightMachine {
+public:
+    virtual float getWeightInKg() = 0;
+    virtual ~WeightMachine() = default;
+};
+
+// Adaptee (existing machine, gives weight in pounds)
+class WeightMachineInPounds {
+public:
+    float getWeightInPounds() {
+        return 220.0f; // Example: machine shows 220 pounds
+    }
+};
+
+// Adapter (converts pounds to kg)
+class WeightMachineAdapter : public WeightMachine {
+    WeightMachineInPounds* machine; // adaptee
+public:
+    WeightMachineAdapter(WeightMachineInPounds* m) : machine(m) {}
+
+    float getWeightInKg() override {
+        float pounds = machine->getWeightInPounds();
+        return pounds * 0.453592f; // conversion formula
+    }
+};
+
+int main() {
+    // Client wants weight in KG
+    WeightMachineInPounds* oldMachine = new WeightMachineInPounds();
+    WeightMachine* adapter = new WeightMachineAdapter(oldMachine);
+
+    cout << "Weight in KG: " << adapter->getWeightInKg() << endl;
+
+    delete adapter;
+    delete oldMachine;
+    return 0;
+}
