@@ -1,0 +1,119 @@
+House = product.
+
+HouseBuilder = abstract builder.
+
+SimpleHouseBuilder and LuxuryHouseBuilder = different ways to build.
+
+CivilEngineer = director that executes steps in order.
+
+
+
+
+
+#include <iostream>
+#include <string>
+using namespace std;
+
+// Product: House
+class House {
+public:
+    string walls;
+    string roof;
+    string doors;
+    string windows;
+    string garage;
+    string garden;
+
+    void showHouse() {
+        cout << "House built with: "
+             << walls << ", "
+             << roof << ", "
+             << doors << ", "
+             << windows << ", "
+             << garage << ", "
+             << garden << endl;
+    }
+};
+
+// Abstract Builder
+class HouseBuilder {
+public:
+    virtual void buildWalls() = 0;
+    virtual void buildRoof() = 0;
+    virtual void buildDoors() = 0;
+    virtual void buildWindows() = 0;
+    virtual void buildGarage() = 0;
+    virtual void buildGarden() = 0;
+    virtual House* getHouse() = 0;
+    virtual ~HouseBuilder() = default;
+};
+
+// Concrete Builder: Simple House
+class SimpleHouseBuilder : public HouseBuilder {
+    House* house;
+public:
+    SimpleHouseBuilder() { house = new House(); }
+
+    void buildWalls() override { house->walls = "Brick Walls"; }
+    void buildRoof() override { house->roof = "Concrete Roof"; }
+    void buildDoors() override { house->doors = "Wooden Door"; }
+    void buildWindows() override { house->windows = "2 Windows"; }
+    void buildGarage() override { house->garage = "No Garage"; }
+    void buildGarden() override { house->garden = "No Garden"; }
+    House* getHouse() override { return house; }
+};
+
+// Concrete Builder: Luxury House
+class LuxuryHouseBuilder : public HouseBuilder {
+    House* house;
+public:
+    LuxuryHouseBuilder() { house = new House(); }
+
+    void buildWalls() override { house->walls = "Marble Walls"; }
+    void buildRoof() override { house->roof = "Glass Roof"; }
+    void buildDoors() override { house->doors = "Automatic Doors"; }
+    void buildWindows() override { house->windows = "10 Large Windows"; }
+    void buildGarage() override { house->garage = "2-Car Garage"; }
+    void buildGarden() override { house->garden = "Beautiful Garden"; }
+    House* getHouse() override { return house; }
+};
+
+// Director: Controls building process
+class CivilEngineer {
+    HouseBuilder* builder;
+public:
+    CivilEngineer(HouseBuilder* b) : builder(b) {}
+
+    House* constructHouse() {
+        builder->buildWalls();
+        builder->buildRoof();
+        builder->buildDoors();
+        builder->buildWindows();
+        builder->buildGarage();
+        builder->buildGarden();
+        return builder->getHouse();
+    }
+};
+
+// Example usage
+int main() {
+    // Build a simple house
+    HouseBuilder* simpleBuilder = new SimpleHouseBuilder();
+    CivilEngineer engineer1(simpleBuilder);
+    House* simpleHouse = engineer1.constructHouse();
+    simpleHouse->showHouse();
+
+    // Build a luxury house
+    HouseBuilder* luxuryBuilder = new LuxuryHouseBuilder();
+    CivilEngineer engineer2(luxuryBuilder);
+    House* luxuryHouse = engineer2.constructHouse();
+    luxuryHouse->showHouse();
+
+    // cleanup
+    delete simpleBuilder;
+    delete luxuryBuilder;
+    delete simpleHouse;
+    delete luxuryHouse;
+
+    return 0;
+}
