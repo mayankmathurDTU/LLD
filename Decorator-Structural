@@ -1,0 +1,30 @@
+class Coffee{
+    virtual int cost()=0
+    virtual string info()=0;
+    virtual ~Coffee()=default;
+};
+class NormalCoffee:public Coffee{
+    public:
+    int cost()override{
+        return 10;
+    }
+    string info()override{
+        return "Normal Coffee";
+    }
+};
+class CoffeeDecorator : public Coffee {
+    public:
+    Coffee* obj;
+    CoffeeDecorator(Coffee* c):obj(c){}
+    virtual ~CoffeeDecorator()=default;
+};
+class MilkCoffee: public CoffeeDecorator{
+    public:
+    int cost()override{return obj->cost() + 5;}
+    string info()override{return obj->info() + "With Milk";}
+};
+class SugarCoffee: public CoffeeDecorator{
+    public:
+    int cost()override{return obj->cost() + 2;}
+    string info()override{return obj->info() + "With Sugar";}
+};
