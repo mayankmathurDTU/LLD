@@ -1,0 +1,22 @@
+search parkig spot for a vehile
+
+class SearchSpotStrategy{
+    public:
+    virtual shared_ptr<Spot> findParkingSpot(shared_ptr<Vehile> v, unordered_map<int,vector<int>>& mp)=0;
+    virtul ~SearchSpotStrategy()=default;
+};
+class NearestFirstStrategy:public SearchSpotStrategy{
+    shared_ptr<Spot> findParkingSpot(shared_ptr<Vehile> v, unordered_map<int,vector<int>>& mp) override{
+        //do some search
+    }
+};
+class BestFitStrategy:public SearchSpotStrategy{
+    shared_ptr<Spot> findParkingSpot(shared_ptr<Vehile> v, unordered_map<int,vector<int>>& mp) override{
+        //do some search
+    }
+};
+class FarthestFirstStrategy:public SearchSpotStrategy{
+    shared_ptr<Spot> findParkingSpot(shared_ptr<Vehile> v, unordered_map<int,vector<int>>& mp) override{
+        //do some search
+    }
+};
