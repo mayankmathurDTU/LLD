@@ -1,0 +1,75 @@
+Double-Checked Locking
+
+class Singleton{
+    inline static unique_ptr<Singleton> obj = nullptr;
+    inline static mutex m;
+    Singleton(){}
+    Singleton(const Singleton& obj)=delete; //deleted copy constructor 
+    Singleton& operator =(const Singleton& obj)=delete;
+    public:
+    static Singleton* getObject(){
+        if(obj==NULL){
+            unique_lock<mutex> lock(m);
+            if(obj==NULL){
+                obj = make_unique<Singleton>();
+                return obj.get();
+            }
+        }
+        return obj.get();
+    }
+};
+-----------------------------------------------------------------------------------------------------------
+Eager Singleton : singleton instance is created at program startup, before anyone asks for it.--->>Simple, inherently thread-safe.
+class Singleton{
+    inline static Singleton obj;
+    Singleton(){}
+    Singleton(const Singleton& obj)=delete;
+    Singleton& operator =(const Singleton& obj)=delete;
+    public:
+    static Singleton* getObj(){
+        return obj;
+    }
+};
+
+-----------------------------------------------------------------------------------------------------------
+Meyers Singleton (Lazy + Static Local Variable) : Object is created only when getInstance() is first called. : Lazy, thread-safe, no manual mutex.
+class Singleton{
+    Singleton(){}
+    Singleton(const Singleton& obj)=delete;
+    Singleton& operator =(const Singleton& obj)=delete;
+    public:
+    static Singleton* getObj(){
+        static Singleton obj;
+        return obj;
+    }
+};
+
+-----------------------------------------------------------------------------------------------------------
+
+| Type       | Initialization       | Thread-Safe      | Pros                                      | Cons                           |
+| ---------- | -------------------- | ---------------- | ----------------------------------------- | ------------------------------ |
+| **Eager**  | At program start     | Yes              | Very simple                               | Always created, even if unused |
+| **Meyers** | On first call (lazy) | Yes              | Recommended (C++11+)                      | Destruction order tricky       |
+| **DCLP**   | On first call (lazy) | Yes (with mutex) | Fine-grained control, uses smart pointers | Verbose, small perf cost       |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
