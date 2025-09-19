@@ -1,0 +1,41 @@
+class LruCache{
+    unordered_map<int,list<pair<int,int>>::iterator> mp;
+    list<pair<int,int>> l;
+    int cap;
+    public:
+    LruCache(int c):cap(c){
+        mp.clear(); l.clear();
+    }
+    int get(int key){
+        if(mp.count(key)!=0){
+            auto it = mp[key];
+            int value = it->second;
+            l.erase(it);
+            l.push_front({key,value});
+            mp[key]=l.begin();
+            return value;
+        }
+        return -1;
+    }
+    void put(int key, int value){
+        if(mp.count(key)==0){
+            //key not in map
+            if(l.size()>=cap){
+                mp.erase(l.back().first);
+                l.pop_back();
+                l.push_front({key,value});
+                mp[key]=l.begin();
+            }
+            else{
+                l.push_front({key,value});
+                mp[key]=l.begin();
+            }
+        }
+        else{
+            //key already exists
+            l.erase(mp[key]);
+            l.push_front({key,value});
+            mp[key]=l.begin();
+        }
+    }
+};
