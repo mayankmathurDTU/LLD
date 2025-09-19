@@ -3,6 +3,25 @@
 using namespace std;
 
 class VendingMachine; // forward declaration
+class State {
+};
+class VendingMachine {
+};
+class IdleState : public State {
+};
+class HasMoneyState : public State {
+};
+class SelectionState : public State {
+};
+class DispenseProductState : public State {
+};
+------------------------------------------------------
+
+#include <iostream>
+#include <string>
+using namespace std;
+
+class VendingMachine; // forward declaration
 
 // ===================== State Interface =====================
 class State {
