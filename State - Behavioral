@@ -1,0 +1,177 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+class VendingMachine; // forward declaration
+
+// ===================== State Interface =====================
+class State {
+public:
+    virtual void insertCash(VendingMachine* vm) = 0;
+    virtual void addMoney(VendingMachine* vm, int amount) = 0;
+    virtual void selectProduct(VendingMachine* vm, string product) = 0;
+    virtual void cancelTransaction(VendingMachine* vm) = 0;
+    virtual void dispense(VendingMachine* vm) = 0;
+    virtual ~State() = default;
+};
+
+// ===================== VendingMachine Context =====================
+class VendingMachine {
+    State* idleState;
+    State* hasMoneyState;
+    State* selectionState;
+    State* dispenseState;
+
+    State* currentState;
+    int balance;
+    string chosenProduct;
+
+public:
+    VendingMachine() {
+    idleState = new IdleState();
+    hasMoneyState = new HasMoneyState();
+    selectionState = new SelectionState();
+    dispenseState = new DispenseProductState();
+
+    currentState = idleState; // start with idle
+    balance = 0;
+  }
+
+    // APIs exposed to the user
+    void insertCash() { currentState->insertCash(this); }
+    void addMoney(int amt) { currentState->addMoney(this, amt); }
+    void selectProduct(string product) { currentState->selectProduct(this, product); }
+    void cancelTransaction() { currentState->cancelTransaction(this); }
+    void dispense() { currentState->dispense(this); }
+
+    // State transitions
+    void setState(State* st) { currentState = st; }
+
+    // Getters for states
+    State* getIdleState() { return idleState; }
+    State* getHasMoneyState() { return hasMoneyState; }
+    State* getSelectionState() { return selectionState; }
+    State* getDispenseState() { return dispenseState; }
+
+    // Balance mgmt
+    void addBalance(int amt) { balance += amt; }
+    void resetBalance() { balance = 0; }
+    int getBalance() { return balance; }
+    void setProduct(string p) { chosenProduct = p; }
+    string getProduct() { return chosenProduct; }
+};
+
+// ===================== Concrete States =====================
+
+// 1. Idle State
+class IdleState : public State {
+public:
+    void insertCash(VendingMachine* vm) override {
+        cout << "Insert Cash button pressed. Moving to HasMoneyState.\n";
+        vm->setState(vm->getHasMoneyState());
+    }
+    void addMoney(VendingMachine* vm, int amount) override {
+        cout << "You must press Insert Cash button first.\n";
+    }
+    void selectProduct(VendingMachine* vm, string product) override {
+        cout << "You must insert cash before selecting product.\n";
+    }
+    void cancelTransaction(VendingMachine* vm) override {
+        cout << "Nothing to cancel. Machine is idle.\n";
+    }
+    void dispense(VendingMachine* vm) override {
+        cout << "Insert cash and select product first.\n";
+    }
+};
+
+// 2. HasMoney State
+class HasMoneyState : public State {
+public:
+    void insertCash(VendingMachine* vm) override {
+        cout << "Already pressed Insert Cash. Add money now.\n";
+    }
+    void addMoney(VendingMachine* vm, int amount) override {
+        vm->addBalance(amount);
+        cout << "Added " << amount << ". Current balance: " << vm->getBalance() << "\n";
+    }
+    void selectProduct(VendingMachine* vm, string product) override {
+        if (vm->getBalance() <= 0) {
+            cout << "No money! Add money first.\n";
+            return;
+        }
+        cout << "Moving to SelectionState. Please choose product.\n";
+        vm->setState(vm->getSelectionState());
+    }
+    void cancelTransaction(VendingMachine* vm) override {
+        cout << "Transaction cancelled. Refunding " << vm->getBalance() << "\n";
+        vm->resetBalance();
+        vm->setState(vm->getIdleState());
+    }
+    void dispense(VendingMachine* vm) override {
+        cout << "Select product first.\n";
+    }
+};
+
+// 3. Selection State
+class SelectionState : public State {
+public:
+    void insertCash(VendingMachine* vm) override {
+        cout << "You are already in selection mode.\n";
+    }
+    void addMoney(VendingMachine* vm, int amount) override {
+        cout << "Adding more money is not allowed now.\n";
+    }
+    void selectProduct(VendingMachine* vm, string product) override {
+        vm->setProduct(product);
+        cout << "Product '" << product << "' selected. Moving to Dispense state.\n";
+        vm->setState(vm->getDispenseState());
+        vm->dispense(); // trigger dispensing
+    }
+    void cancelTransaction(VendingMachine* vm) override {
+        cout << "Transaction cancelled. Refunding " << vm->getBalance() << "\n";
+        vm->resetBalance();
+        vm->setState(vm->getIdleState());
+    }
+    void dispense(VendingMachine* vm) override {
+        cout << "Wait, product not yet selected.\n";
+    }
+};
+
+// 4. Dispense Product State
+class DispenseProductState : public State {
+public:
+    void insertCash(VendingMachine* vm) override {
+        cout << "Please wait, machine is dispensing.\n";
+    }
+    void addMoney(VendingMachine* vm, int amount) override {
+        cout << "Please wait, machine is dispensing.\n";
+    }
+    void selectProduct(VendingMachine* vm, string product) override {
+        cout << "Please wait, machine is dispensing.\n";
+    }
+    void cancelTransaction(VendingMachine* vm) override {
+        cout << "Too late to cancel. Dispensing...\n";
+    }
+    void dispense(VendingMachine* vm) override {
+        cout << "Dispensing product: " << vm->getProduct() << "\n";
+        vm->resetBalance();
+        vm->setState(vm->getIdleState()); // back to start
+    }
+};
+
+// ===================== Demo =====================
+int main() {
+    VendingMachine vm;
+
+    vm.insertCash();            // move Idle → HasMoney
+    vm.addMoney(50);            // add balance
+    vm.selectProduct("Coke");   // move → Selection → Dispense
+    // machine automatically dispenses and resets to Idle
+
+    cout << "\n--- Another flow ---\n";
+    vm.insertCash();
+    vm.addMoney(30);
+    vm.cancelTransaction();     // refund and reset
+
+    return 0;
+}
