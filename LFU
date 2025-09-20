@@ -1,0 +1,63 @@
+class LFUCache {
+    int capacity, minFreq;
+    unordered_map<int, pair<int,int>> keyToValFreq;         // key -> {value, freq}
+    unordered_map<int, list<int>> freqToKeys;              // freq -> list of keys
+    unordered_map<int, list<int>::iterator> keyToIter;     // key -> iterator in its freq list
+
+public:
+    LFUCache(int capacity) {
+        this->capacity = capacity;
+        minFreq = 0;
+    }
+    
+    int get(int key) {
+        if (!keyToValFreq.count(key)) return -1;
+        
+        // Extract value and frequency
+        int val = keyToValFreq[key].first;
+        int freq = keyToValFreq[key].second;
+        
+        // Remove key from current freq list
+        freqToKeys[freq].erase(keyToIter[key]);
+        
+        // If list becomes empty and freq == minFreq, update minFreq
+        if (freqToKeys[freq].empty()) {
+            freqToKeys.erase(freq);
+            if (minFreq == freq) minFreq++;
+        }
+        
+        // Insert into higher freq list
+        freqToKeys[freq + 1].push_front(key);
+        keyToIter[key] = freqToKeys[freq + 1].begin();
+        keyToValFreq[key].second++; // increase freq
+        
+        return val;
+    }
+    
+    void put(int key, int value) {
+        if (capacity == 0) return;
+        
+        // If key exists, update value and use get() to bump frequency
+        if (keyToValFreq.count(key)) {
+            keyToValFreq[key].first = value;
+            get(key); // bump frequency
+            return;
+        }
+        
+        // If cache is full, evict LFU
+        if (keyToValFreq.size() >= capacity) {
+            int evictKey = freqToKeys[minFreq].back();
+            freqToKeys[minFreq].pop_back();
+            if (freqToKeys[minFreq].empty()) freqToKeys.erase(minFreq);
+            
+            keyToValFreq.erase(evictKey);
+            keyToIter.erase(evictKey);
+        }
+        
+        // Insert new key with freq = 1
+        keyToValFreq[key] = {value, 1};
+        freqToKeys[1].push_front(key);
+        keyToIter[key] = freqToKeys[1].begin();
+        minFreq = 1;
+    }
+};
