@@ -1,0 +1,75 @@
+#include <iostream>
+#include <string>
+#include <memory>
+
+using namespace std;
+
+enum LogLevel { DEBUG, INFO, ERROR };
+
+class Logger {
+protected:
+    shared_ptr<Logger> nextLogger;
+public:
+    void setNext(shared_ptr<Logger> next) {
+        nextLogger = next;
+    }
+    void logMessage(LogLevel level, const string& message) {
+        if (canHandle(level)) {
+            write(message);
+        }
+        if (nextLogger) {
+            nextLogger->logMessage(level, message);
+        }
+    }
+    virtual ~Logger() = default;
+protected:
+    virtual bool canHandle(LogLevel level) = 0;
+    virtual void write(const string& message) = 0;
+};
+
+class DebugLogger : public Logger {
+protected:
+    bool canHandle(LogLevel level) override {
+        return level == DEBUG;
+    }
+    void write(const string& message) override {
+        cout << "[DEBUG]: " << message << "\n";
+    }
+};
+
+class InfoLogger : public Logger {
+protected:
+    bool canHandle(LogLevel level) override {
+        return level == INFO;
+    }
+    void write(const string& message) override {
+        cout << "[INFO]: " << message << "\n";
+    }
+};
+
+class ErrorLogger : public Logger {
+protected:
+    bool canHandle(LogLevel level) override {
+        return level == ERROR;
+    }
+    void write(const string& message) override {
+        cout << "[ERROR]: " << message << "\n";
+    }
+};
+
+int main() {
+    auto errorLogger = make_shared<ErrorLogger>();
+    auto infoLogger = make_shared<InfoLogger>();
+    auto debugLogger = make_shared<DebugLogger>();
+
+    errorLogger->setNext(infoLogger);
+    infoLogger->setNext(debugLogger);
+
+    auto loggerChain = errorLogger;
+
+    loggerChain->logMessage(DEBUG, "This is a debug message");
+    loggerChain->logMessage(INFO, "This is an info message");
+    loggerChain->logMessage(ERROR, "This is an error message");
+
+    return 0;
+}
