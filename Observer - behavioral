@@ -1,63 +1,202 @@
-class Observer; // forward declaration
+| Real System        | Subject         | Observers      | What changes | What happens         |
+| ------------------ | --------------- | -------------- | ------------ | -------------------- |
+| Amazon “Notify Me” | Product         | Users          | Stock status | Users notified       |
+| YouTube            | Channel         | Subscribers    | New video    | Subscribers notified |
+| Weather App        | Weather Station | Displays, Apps | Weather data | UI updates           |
+| Stock Market       | Exchange        | Traders, Apps  | Price        | Price update alerts  |
+| Chat App           | User            | Friends        | Status       | Status updates       |
 
-class Subject {
-public:
-    virtual void attach(shared_ptr<Observer> obs) = 0;
-    virtual void detach(shared_ptr<Observer> obs) = 0;
-    virtual void notify() = 0;
-    virtual string getName() = 0;
-    virtual int getStock() = 0;
-    virtual ~Subject() = default;
-};
 
-// ----------- Observer -----------
+
+
+#include <iostream>
+#include <vector>
+#include <string>
+#include <algorithm>
+using namespace std;
+
+// ---------- Observer Interface ----------
 class Observer {
 public:
-    virtual void update(shared_ptr<Subject> s) = 0;
-    virtual ~Observer() = default;
+    virtual void update(string productName, int stock) = 0; // called when stock changes
+    virtual ~Observer() {} // virtual destructor
 };
 
-// ----------- Concrete Subject (Pencil) -----------
-class Pencil : public Subject, public enable_shared_from_this<Pencil> {
-    string name;
-    int stock;
-    vector<shared_ptr<Observer>> observers;
+// ---------- Subject (Product) ----------
+class Product {
+    string name;                        // product name
+    int stock;                          // available stock
+    vector<Observer*> observers;        // list of observers (users)
 
 public:
-    Pencil(string n, int s) : name(n), stock(s) {}
+    Product(string n, int s) : name(n), stock(s) {} // constructor
 
-    void attach(shared_ptr<Observer> obs) override {
+    void attach(Observer* obs) {                     // add a new observer
         observers.push_back(obs);
     }
 
-    void detach(shared_ptr<Observer> obs) override {
+    void detach(Observer* obs) {                     // remove an observer
         observers.erase(remove(observers.begin(), observers.end(), obs), observers.end());
     }
 
-    void notify() override {
-        for (auto &obs : observers) {
-            if (obs) obs->update(shared_from_this()); // ✅ pass myself
+    void notify() {                                  // notify all observers
+        for (auto obs : observers) {
+            obs->update(name, stock);
         }
     }
 
-    string getName() override { return name; }
-    int getStock() override { return stock; }
-
-    void setStock(int s) {
+    void setStock(int s) {                           // change stock and notify observers
         stock = s;
-        notify();
+        notify();                                    // trigger update notifications
+    }
+
+    string getName() { return name; }
+    int getStock() { return stock; }
+};
+
+// ---------- Concrete Observer (User) ----------
+class User : public Observer {
+    string email;                                   // user identifier (e.g., email)
+public:
+    User(string e) : email(e) {}
+
+    void update(string productName, int stock) override {
+        cout << "Notification to " << email << ": " 
+             << productName << " stock updated to " << stock << "\n";
     }
 };
 
-// ----------- Concrete Observer -----------
-class ConcreteObserver : public Observer {
-    string emailId;
+// ---------- Example Usage ----------
+int main() {
+    Product pencil("Apsara Pencil", 0);             // product starts with 0 stock
+
+    User u1("ram@gmail.com");                       // create users
+    User u2("shyam@gmail.com");
+
+    pencil.attach(&u1);                             // users subscribe to notifications
+    pencil.attach(&u2);
+
+    pencil.setStock(10);                            // update stock → notifies both
+    pencil.setStock(20);                            // update stock again
+
+    pencil.detach(&u1);                             // ram unsubscribes
+
+    pencil.setStock(30);                            // only shyam gets notified now
+
+    return 0;
+}
+
+
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+
+#include <bits/stdc++.h>   // includes all standard headers (like iostream, vector, etc.)
+using namespace std;
+
+// ---------- Forward declaration ----------
+class Observer; // we declare Observer first so Subject can refer to it later
+
+// ---------- Abstract Subject class ----------
+class Subject {
+public:
+    virtual void attach(shared_ptr<Observer> obs) = 0;   // add an observer who wants notifications
+    virtual void detach(shared_ptr<Observer> obs) = 0;   // remove an observer
+    virtual void notify() = 0;                           // notify all observers about updates
+    virtual string getName() = 0;                        // get the name of the subject
+    virtual int getStock() = 0;                          // get the current stock of the subject
+    virtual ~Subject() = default;                        // virtual destructor for cleanup
+};
+
+// ---------- Abstract Observer class ----------
+class Observer {
+public:
+    virtual void update(shared_ptr<Subject> s) = 0;       // called when Subject notifies observers
+    virtual ~Observer() = default;                        // virtual destructor for cleanup
+};
+
+// ---------- Concrete Subject (e.g., Pencil) ----------
+class Pencil : public Subject, public enable_shared_from_this<Pencil> {
+    string name;                                         // name of the product
+    int stock;                                           // stock count of the product
+    vector<shared_ptr<Observer>> observers;              // list of all observers watching this subject
 
 public:
-    ConcreteObserver(string e) : emailId(e) {}
+    Pencil(string n, int s) : name(n), stock(s) {}       // constructor to initialize name and stock
 
-    void update(shared_ptr<Subject> s) override {
-        cout << "Notification to " << emailId << ": "
-             << s->getName() << " stock updated to " << s->getStock() << "\n";
+    void attach(shared_ptr<Observer> obs) override {     // adds an observer to the list
+        observers.push_back(obs);                        // store the observer
+    }
+
+    void detach(shared_ptr<Observer> obs) override {     // removes an observer from the list
+        observers.erase(remove(observers.begin(), observers.end(), obs), observers.end());
+    }
+
+    void notify() override {                             // notifies all attached observers
+        for (auto &obs : observers) {                    // loop through all observers
+            if (obs) obs->update(shared_from_this());    // call their update() method, passing myself
+        }
+    }
+
+    string getName() override { return name; }           // returns product name
+    int getStock() override { return stock; }            // returns current stock
+
+    void setStock(int s) {                               // updates stock and notifies all observers
+        stock = s;                                       // change the stock value
+        notify();                                        // inform all registered observers
     }
 };
+
+// ---------- Concrete Observer ----------
+class ConcreteObserver : public Observer {
+    string emailId;                                      // email address of the user observing the product
+
+public:
+    ConcreteObserver(string e) : emailId(e) {}           // constructor to set the user's email
+
+    void update(shared_ptr<Subject> s) override {         // called when product stock changes
+        cout << "Notification to " << emailId << ": "     // print message for the user
+             << s->getName() << " stock updated to "      // include product name
+             << s->getStock() << "\n";                    // include new stock value
+    }
+};
+
+// ---------- Example Usage ----------
+int main() {
+    auto pencil = make_shared<Pencil>("Apsara Pencil", 0);     // create a Pencil product with stock = 0
+    auto user1 = make_shared<ConcreteObserver>("ram@gmail.com"); // create an observer for user1
+    auto user2 = make_shared<ConcreteObserver>("shyam@gmail.com"); // create an observer for user2
+
+    pencil->attach(user1);                                     // user1 subscribes for notifications
+    pencil->attach(user2);                                     // user2 subscribes for notifications
+
+    pencil->setStock(10);                                      // update stock -> automatically notifies all users
+    pencil->setStock(20);                                      // again update stock -> all observers get update
+
+    return 0;                                                  // end of program
+}
+
+
+
+# Issue:
+# When an object is created using make_shared, it has one control block.
+# If inside the object you again create shared_ptr(this), it makes another control block.
+# Now both shared_ptrs think they own the same object.
+# When one deletes it, the other later tries to delete it again.
+# This results in double free or memory corruption (crash).
+
+# Solution:
+# Inherit from enable_shared_from_this<T> and use shared_from_this()
+# to get a shared_ptr that shares the original control block safely.
