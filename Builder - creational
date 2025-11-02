@@ -1,12 +1,25 @@
-House = product.
++----------------------------------------+-------------------------------------------------------------+-------------------------------------------------------------+
+| FAANG Interview Question               | Example Scenario                                            | Why Builder Pattern Fits                                    |
++----------------------------------------+-------------------------------------------------------------+-------------------------------------------------------------+
+| 1. Design a Pizza Ordering System      | Pizza has many optional parts — crust, sauce, cheese, etc.  | Builder lets you create pizzas step by step (customizable). |
+| 2. Design a Resume Builder App         | User adds sections like education, projects, skills, etc.   | Each resume is built stepwise based on user’s input.        |
+| 3. Design a Computer Configuration Tool| User selects CPU, RAM, GPU, storage type, etc.              | Each component can be added in sequence for flexibility.    |
+| 4. Design a Car Manufacturing System   | Cars can be luxury, sport, or electric with different specs.| Builder builds complex car objects with variant details.    |
+| 5. Design a Report Generator           | Reports can have header, body, footer, charts, etc.         | Builder can construct reports part by part dynamically.     |
+| 6. Design a House Construction System  | Build different types of houses: simple, villa, cottage.    | Builder handles different construction steps in order.      |
+| 7. Design a Mobile App UI Generator    | App screens have optional widgets, menus, toolbars, etc.    | Builder adds UI parts one by one, based on design config.   |
++----------------------------------------+-------------------------------------------------------------+-------------------------------------------------------------+
 
-HouseBuilder = abstract builder.
 
-SimpleHouseBuilder and LuxuryHouseBuilder = different ways to build.
-
-CivilEngineer = director that executes steps in order.
-
-
++------------------------+----------------------------------------------+---------------------------------------------+
+| Component              | Role                                         | Example / Analogy                          |
++------------------------+----------------------------------------------+---------------------------------------------+
+| House (Product)        | Final object being built                     | The completed house                         |
+| HouseBuilder           | Blueprint of how to build a house            | Defines steps like buildWalls(), buildRoof()|
+| SimpleHouseBuilder     | Concrete builder for basic house             | Builds normal house with simple materials   |
+| LuxuryHouseBuilder     | Concrete builder for fancy house             | Builds house with luxury materials & design |
+| CivilEngineer (Director)| Controls the building process in right order| Follows steps and tells builder what to do  |
++------------------------+----------------------------------------------+---------------------------------------------+
 
 
 
@@ -14,7 +27,8 @@ CivilEngineer = director that executes steps in order.
 #include <string>
 using namespace std;
 
-// Product: House
+// ---------------------------- Product ----------------------------
+// The final object we want to build (House)
 class House {
 public:
     string walls;
@@ -24,6 +38,7 @@ public:
     string garage;
     string garden;
 
+    // Show details of the house built
     void showHouse() {
         cout << "House built with: "
              << walls << ", "
@@ -35,55 +50,61 @@ public:
     }
 };
 
-// Abstract Builder
+// ---------------------------- Abstract Builder ----------------------------
+// Defines the steps needed to build a house
 class HouseBuilder {
 public:
-    virtual void buildWalls() = 0;
-    virtual void buildRoof() = 0;
-    virtual void buildDoors() = 0;
-    virtual void buildWindows() = 0;
-    virtual void buildGarage() = 0;
-    virtual void buildGarden() = 0;
-    virtual House* getHouse() = 0;
-    virtual ~HouseBuilder() = default;
+    virtual void buildWalls() = 0;     // Step 1: Build walls
+    virtual void buildRoof() = 0;      // Step 2: Build roof
+    virtual void buildDoors() = 0;     // Step 3: Add doors
+    virtual void buildWindows() = 0;   // Step 4: Add windows
+    virtual void buildGarage() = 0;    // Step 5: Add garage (optional)
+    virtual void buildGarden() = 0;    // Step 6: Add garden (optional)
+    virtual House* getHouse() = 0;     // Step 7: Return the final product
+    virtual ~HouseBuilder() = default; // Virtual destructor for cleanup
 };
 
-// Concrete Builder: Simple House
+// ---------------------------- Concrete Builder: Simple House ----------------------------
+// Implements steps for a basic, low-cost house
 class SimpleHouseBuilder : public HouseBuilder {
-    House* house;
+    House* house; // The house being built
 public:
-    SimpleHouseBuilder() { house = new House(); }
+    SimpleHouseBuilder() { house = new House(); } // Create empty house
 
-    void buildWalls() override { house->walls = "Brick Walls"; }
-    void buildRoof() override { house->roof = "Concrete Roof"; }
-    void buildDoors() override { house->doors = "Wooden Door"; }
-    void buildWindows() override { house->windows = "2 Windows"; }
-    void buildGarage() override { house->garage = "No Garage"; }
-    void buildGarden() override { house->garden = "No Garden"; }
-    House* getHouse() override { return house; }
+    void buildWalls() override { house->walls = "Brick Walls"; }         // Use normal brick walls
+    void buildRoof() override { house->roof = "Concrete Roof"; }         // Simple concrete roof
+    void buildDoors() override { house->doors = "Wooden Door"; }         // Single wooden door
+    void buildWindows() override { house->windows = "2 Windows"; }       // Only two windows
+    void buildGarage() override { house->garage = "No Garage"; }         // No garage for simple house
+    void buildGarden() override { house->garden = "No Garden"; }         // No garden
+    House* getHouse() override { return house; }                         // Return the completed house
 };
 
-// Concrete Builder: Luxury House
+// ---------------------------- Concrete Builder: Luxury House ----------------------------
+// Implements steps for a premium house
 class LuxuryHouseBuilder : public HouseBuilder {
     House* house;
 public:
-    LuxuryHouseBuilder() { house = new House(); }
+    LuxuryHouseBuilder() { house = new House(); } // Start building a new luxury house
 
-    void buildWalls() override { house->walls = "Marble Walls"; }
-    void buildRoof() override { house->roof = "Glass Roof"; }
-    void buildDoors() override { house->doors = "Automatic Doors"; }
-    void buildWindows() override { house->windows = "10 Large Windows"; }
-    void buildGarage() override { house->garage = "2-Car Garage"; }
-    void buildGarden() override { house->garden = "Beautiful Garden"; }
-    House* getHouse() override { return house; }
+    void buildWalls() override { house->walls = "Marble Walls"; }              // Expensive marble walls
+    void buildRoof() override { house->roof = "Glass Roof"; }                  // Fancy glass roof
+    void buildDoors() override { house->doors = "Automatic Doors"; }           // Automatic doors
+    void buildWindows() override { house->windows = "10 Large Windows"; }      // Many large windows
+    void buildGarage() override { house->garage = "2-Car Garage"; }            // Two-car garage
+    void buildGarden() override { house->garden = "Beautiful Garden"; }        // Nice garden
+    House* getHouse() override { return house; }                               // Return luxury house
 };
 
-// Director: Controls building process
+// ---------------------------- Director ----------------------------
+// CivilEngineer knows *how* to build a house but not *what type*.
+// It executes building steps in the correct order.
 class CivilEngineer {
-    HouseBuilder* builder;
+    HouseBuilder* builder; // Holds reference to builder (simple/luxury)
 public:
-    CivilEngineer(HouseBuilder* b) : builder(b) {}
+    CivilEngineer(HouseBuilder* b) : builder(b) {} // Pass builder type at runtime
 
+    // Calls all build steps in order and returns the completed house
     House* constructHouse() {
         builder->buildWalls();
         builder->buildRoof();
@@ -91,25 +112,25 @@ public:
         builder->buildWindows();
         builder->buildGarage();
         builder->buildGarden();
-        return builder->getHouse();
+        return builder->getHouse(); // Return fully built house
     }
 };
 
-// Example usage
+// ---------------------------- Main: Client Code ----------------------------
 int main() {
     // Build a simple house
-    HouseBuilder* simpleBuilder = new SimpleHouseBuilder();
-    CivilEngineer engineer1(simpleBuilder);
-    House* simpleHouse = engineer1.constructHouse();
-    simpleHouse->showHouse();
+    HouseBuilder* simpleBuilder = new SimpleHouseBuilder(); // Choose simple builder
+    CivilEngineer engineer1(simpleBuilder);                 // Give builder to engineer
+    House* simpleHouse = engineer1.constructHouse();         // Build house
+    simpleHouse->showHouse();                                // Show final result
 
     // Build a luxury house
-    HouseBuilder* luxuryBuilder = new LuxuryHouseBuilder();
-    CivilEngineer engineer2(luxuryBuilder);
-    House* luxuryHouse = engineer2.constructHouse();
-    luxuryHouse->showHouse();
+    HouseBuilder* luxuryBuilder = new LuxuryHouseBuilder();  // Choose luxury builder
+    CivilEngineer engineer2(luxuryBuilder);                  // Engineer uses luxury builder
+    House* luxuryHouse = engineer2.constructHouse();          // Build house
+    luxuryHouse->showHouse();                                 // Show result
 
-    // cleanup
+    // Cleanup memory
     delete simpleBuilder;
     delete luxuryBuilder;
     delete simpleHouse;
