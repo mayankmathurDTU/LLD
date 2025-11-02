@@ -1,75 +1,91 @@
-#include <iostream>
-#include <string>
-#include <memory>
+#include <iostream>   // For console output
+#include <string>     // For using std::string
+#include <memory>     // For smart pointers (shared_ptr)
 
 using namespace std;
 
+// Define log levels for messages
 enum LogLevel { DEBUG, INFO, ERROR };
 
+// Abstract base class for all loggers
 class Logger {
 protected:
-    shared_ptr<Logger> nextLogger;
+    shared_ptr<Logger> nextLogger;  // Pointer to the next logger in the chain
 public:
+    // Set the next logger in the chain
     void setNext(shared_ptr<Logger> next) {
         nextLogger = next;
     }
+
+    // Handle the log message
     void logMessage(LogLevel level, const string& message) {
+        // If this logger can handle the given log level
         if (canHandle(level)) {
-            write(message);
+            write(message);  // Process (print) the message
         }
+        // Pass the message to the next logger in the chain
         if (nextLogger) {
             nextLogger->logMessage(level, message);
         }
     }
-    virtual ~Logger() = default;
+
+    virtual ~Logger() = default;  // Virtual destructor for safe cleanup
+
 protected:
-    virtual bool canHandle(LogLevel level) = 0;
-    virtual void write(const string& message) = 0;
+    virtual bool canHandle(LogLevel level) = 0;  // Checks if this logger handles given level
+    virtual void write(const string& message) = 0; // Writes the log message (pure virtual)
 };
 
+// Logger for handling DEBUG messages
 class DebugLogger : public Logger {
 protected:
     bool canHandle(LogLevel level) override {
-        return level == DEBUG;
+        return level == DEBUG;  // Returns true only for DEBUG logs
     }
     void write(const string& message) override {
-        cout << "[DEBUG]: " << message << "\n";
+        cout << "[DEBUG]: " << message << "\n";  // Print debug message
     }
 };
 
+// Logger for handling INFO messages
 class InfoLogger : public Logger {
 protected:
     bool canHandle(LogLevel level) override {
-        return level == INFO;
+        return level == INFO;  // Returns true only for INFO logs
     }
     void write(const string& message) override {
-        cout << "[INFO]: " << message << "\n";
+        cout << "[INFO]: " << message << "\n";  // Print info message
     }
 };
 
+// Logger for handling ERROR messages
 class ErrorLogger : public Logger {
 protected:
     bool canHandle(LogLevel level) override {
-        return level == ERROR;
+        return level == ERROR;  // Returns true only for ERROR logs
     }
     void write(const string& message) override {
-        cout << "[ERROR]: " << message << "\n";
+        cout << "[ERROR]: " << message << "\n";  // Print error message
     }
 };
 
 int main() {
-    auto errorLogger = make_shared<ErrorLogger>();
-    auto infoLogger = make_shared<InfoLogger>();
-    auto debugLogger = make_shared<DebugLogger>();
+    // Create instances of each logger type
+    auto errorLogger = make_shared<ErrorLogger>();  // Handles ERROR logs
+    auto infoLogger = make_shared<InfoLogger>();    // Handles INFO logs
+    auto debugLogger = make_shared<DebugLogger>();  // Handles DEBUG logs
 
+    // Build the chain: ERROR → INFO → DEBUG
     errorLogger->setNext(infoLogger);
     infoLogger->setNext(debugLogger);
 
+    // Start chain from the first logger (ERROR)
     auto loggerChain = errorLogger;
 
-    loggerChain->logMessage(DEBUG, "This is a debug message");
-    loggerChain->logMessage(INFO, "This is an info message");
-    loggerChain->logMessage(ERROR, "This is an error message");
+    // Send messages with different log levels
+    loggerChain->logMessage(DEBUG, "This is a debug message");  // Handled by DebugLogger
+    loggerChain->logMessage(INFO, "This is an info message");   // Handled by InfoLogger
+    loggerChain->logMessage(ERROR, "This is an error message"); // Handled by ErrorLogger
 
-    return 0;
+    return 0;  // Program ends
 }
