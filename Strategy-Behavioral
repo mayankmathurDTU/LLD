@@ -1,3 +1,37 @@
+# 🔹 STRATEGY DESIGN PATTERN (Simple Explanation)
+
+1. It is used when you have many ways to do the same task.  
+2. Instead of writing many if-else statements, each way is kept in a separate class.  
+3. You can switch between these classes (strategies) at runtime.  
+4. The main class just uses a common interface — it doesn’t care which strategy is used.  
+5. This makes code clean, flexible, and easy to extend.  
+6. Example → Payment system can use Card, UPI, or Wallet strategy as needed.
+
+
++-----------------------------+---------------------------------------------------------+------------------------------------------------------+
+| Example                    | Description                                             | Real-world Analogy / Use Case                        |
++-----------------------------+---------------------------------------------------------+------------------------------------------------------+
+| Payment Gateway             | Selects payment method dynamically (UPI, Card, Wallet). | Amazon / Flipkart checkout choosing payment method.  |
+| Sorting Algorithm           | Uses different sorting strategies based on data type.   | Java’s Collections.sort() chooses algorithm.         |
+| Compression Strategy        | Compresses file using chosen algorithm (ZIP, RAR).      | File compression tools like WinZip or 7-Zip.         |
+| Pathfinding in Maps         | Chooses algorithm (Dijkstra, A*, BFS) at runtime.       | Google Maps — fastest vs shortest route.             |
+| Image Filter Application    | Applies selected filter (grayscale, blur, sharpen).     | Instagram or Photoshop filters.                      |
+| Parking Spot Search         | Finds parking spot using strategy (nearest, best-fit).  | Smart parking systems.                               |
+| Authentication Mechanism    | Switches between OAuth, JWT, SSO dynamically.           | Logging in via Google, Facebook, or Apple ID.        |
+| Notification Sending        | Chooses channel (Email, SMS, Push).                     | Notification services in apps.                       |
+| Discount / Pricing Engine   | Applies dynamic discount logic per strategy.            | E-commerce flash sales or coupon systems.            |
+| Recommendation Algorithm    | Switches model for recommendations (content vs CF).     | Netflix / YouTube recommendation engine.             |
++-----------------------------+---------------------------------------------------------+------------------------------------------------------+
+
+-----------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------
+
+
 search parkig spot for a vehile
 
 class SearchSpotStrategy{
