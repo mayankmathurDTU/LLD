@@ -28,3 +28,16 @@ class SugarCoffee: public CoffeeDecorator{
     int cost()override{return obj->cost() + 2;}
     string info()override{return obj->info() + "With Sugar";}
 };
+int main() {
+    Coffee* coffee = new NormalCoffee();                   // Start with plain coffee
+    cout << coffee->info() << " | Cost: " << coffee->cost() << endl;
+
+    coffee = new MilkCoffee(coffee);                       // Add milk
+    cout << coffee->info() << " | Cost: " << coffee->cost() << endl;
+
+    coffee = new SugarCoffee(coffee);                      // Add sugar
+    cout << coffee->info() << " | Cost: " << coffee->cost() << endl;
+
+    delete coffee;                                         // Clean up memory
+    return 0;
+}
