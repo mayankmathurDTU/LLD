@@ -1,37 +1,33 @@
-class WeightMachine {
+#include <iostream>
+using namespace std;
+
+class WeightMachine {  // Target interface (client wants weight in KG)
 public:
-    virtual float getWeightInKg() = 0;
-    virtual ~WeightMachine() = default;
+    virtual float getWeightInKg() = 0;  // Function to return weight in kilograms
+    virtual ~WeightMachine() = default; // Virtual destructor for cleanup
 };
 
-// Adaptee (existing machine, gives weight in pounds)
-class WeightMachineInPounds {
+class WeightMachineInPounds {  // Adaptee (old machine gives weight in pounds)
 public:
-    float getWeightInPounds() {
-        return 220.0f; // Example: machine shows 220 pounds
-    }
+    float getWeightInPounds() { return 220.0f; }  // Returns weight in pounds (example value)
 };
 
-// Adapter (converts pounds to kg)
-class WeightMachineAdapter : public WeightMachine {
-    WeightMachineInPounds* machine; // adaptee
+class WeightMachineAdapter : public WeightMachine {  // Adapter (converts pounds → KG)
+    WeightMachineInPounds* machine;  // Holds reference to old pounds machine
 public:
-    WeightMachineAdapter(WeightMachineInPounds* m) : machine(m) {}
+    WeightMachineAdapter(WeightMachineInPounds* m) : machine(m) {}  // Constructor connects adapter to old machine
 
-    float getWeightInKg() override {
-        float pounds = machine->getWeightInPounds();
-        return pounds * 0.453592f; // conversion formula
+    float getWeightInKg() override {  // Client calls this to get weight in KG
+        float pounds = machine->getWeightInPounds();  // Get pounds from old machine
+        return pounds * 0.453592f;  // Convert pounds to KG (1 pound = 0.453592 kg)
     }
 };
 
 int main() {
-    // Client wants weight in KG
-    WeightMachineInPounds* oldMachine = new WeightMachineInPounds();
-    WeightMachine* adapter = new WeightMachineAdapter(oldMachine);
-
-    cout << "Weight in KG: " << adapter->getWeightInKg() << endl;
-
-    delete adapter;
-    delete oldMachine;
-    return 0;
+    WeightMachineInPounds* oldMachine = new WeightMachineInPounds();  // Create old machine (works in pounds)
+    WeightMachine* adapter = new WeightMachineAdapter(oldMachine);    // Create adapter to convert pounds → KG
+    cout << "Weight in KG: " << adapter->getWeightInKg() << endl;     // Client uses adapter to get result in KG
+    delete adapter;  // Free adapter memory
+    delete oldMachine;  // Free old machine memory
+    return 0;  // Program ends
 }
