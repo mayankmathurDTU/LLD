@@ -1,49 +1,95 @@
++--------------------------+-------------------------------------------------------------+----------------------------------------------+
+| Example Name             | What It Does (Simple)                                      | Why It Uses Singleton                        |
++--------------------------+-------------------------------------------------------------+----------------------------------------------+
+| Logger                   | Keeps one log file for all system events.                  | To ensure logs are written in one place only.|
+| Cache Manager             | Stores frequently used data for reuse.                     | One global cache improves speed and memory.  |
+| Thread Pool               | Handles limited background threads for all tasks.          | Central control of worker threads.           |
+| Notification Service      | Sends alerts from one central point in system.             | Avoids duplicate notifications.              |
+| Print Spooler             | Controls all print jobs in one queue.                      | One global print manager for order & safety. |
++--------------------------+-------------------------------------------------------------+----------------------------------------------+
+
+
 Double-Checked Locking
 
-class Singleton{
-    inline static unique_ptr<Singleton> obj = nullptr;
-    inline static mutex m;
-    Singleton(){}
-    Singleton(const Singleton& obj)=delete; //deleted copy constructor 
-    Singleton& operator =(const Singleton& obj)=delete;
-    public:
-    static Singleton* getObject(){
-        if(obj==NULL){
-            unique_lock<mutex> lock(m);
-            if(obj==NULL){
-                obj = make_unique<Singleton>();
-                return obj.get();
+#include <bits/stdc++.h>
+using namespace std;
+
+class Singleton {
+    inline static unique_ptr<Singleton> obj = nullptr;   // holds the single instance (initially null)
+    inline static mutex m;                               // ensures thread-safe creation
+    Singleton() {}                                       // private constructor to prevent outside creation
+    Singleton(const Singleton& obj) = delete;            // disable copy constructor
+    Singleton& operator=(const Singleton& obj) = delete; // disable assignment operator
+
+public:
+    static Singleton* getObject() {                      // global access point for the instance
+        if (obj == nullptr) {                            // first check (fast path, no locking)
+            unique_lock<mutex> lock(m);                  // lock to prevent race condition
+            if (obj == nullptr) {                        // second check (inside lock for safety)
+                obj = make_unique<Singleton>();          // create the Singleton instance
+                return obj.get();                        // return pointer to the new instance
             }
         }
-        return obj.get();
+        return obj.get();                                // return already created instance
     }
+
+    ~Singleton() = default;                              // public destructor so unique_ptr can delete it
 };
+
 -----------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------
+
 Eager Singleton : singleton instance is created at program startup, before anyone asks for it.--->>Simple, inherently thread-safe.
-class Singleton{
-    inline static Singleton obj;
-    Singleton(){}
-    Singleton(const Singleton& obj)=delete;
-    Singleton& operator =(const Singleton& obj)=delete;
-    public:
-    static Singleton* getObj(){
-        return obj;
+
+#include <bits/stdc++.h>
+using namespace std;
+
+class Singleton {
+    inline static Singleton obj;              // ✅ Eagerly created Singleton instance (created at program start)
+    Singleton() {}                            // private constructor — prevents creating new objects from outside
+    Singleton(const Singleton& obj) = delete; // disable copy constructor (no copying allowed)
+    Singleton& operator=(const Singleton& obj) = delete; // disable assignment (no reassignment)
+
+public:
+    static Singleton* getObj() {              // global access point for Singleton
+        return &obj;                          // return the address of the already created instance
     }
 };
 
+-----------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------
 Meyers Singleton (Lazy + Static Local Variable) : Object is created only when getInstance() is first called. : Lazy, thread-safe, no manual mutex.
-class Singleton{
-    Singleton(){}
-    Singleton(const Singleton& obj)=delete;
-    Singleton& operator =(const Singleton& obj)=delete;
-    public:
-    static Singleton* getObj(){
-        static Singleton obj;
-        return obj;
+
+#include <bits/stdc++.h>
+using namespace std;
+
+class Singleton {
+    Singleton() {}                                       // private constructor — prevents external object creation
+    Singleton(const Singleton& obj) = delete;            // disable copy constructor (no copying)
+    Singleton& operator=(const Singleton& obj) = delete; // disable assignment (no reassignment)
+
+public:
+    static Singleton* getObj() {                         // global access point to get the Singleton instance
+        static Singleton obj;                            // ✅ static local variable — created only once (lazy)
+        return &obj;                                     // return the same instance every time
     }
 };
 
+-----------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------
 
 | Type       | Initialization       | Thread-Safe      | Pros                                      | Cons                           |
